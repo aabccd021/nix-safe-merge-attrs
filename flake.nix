@@ -1,13 +1,14 @@
 {
   nixConfig.allow-import-from-derivation = false;
+
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
 
-  outputs = { nixpkgs, treefmt-nix, self }:
+  outputs = { self, ... }@inputs:
     let
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
 
-      treefmtEval = treefmt-nix.lib.evalModule pkgs {
+      treefmtEval = inputs.treefmt-nix.lib.evalModule pkgs {
         projectRootFile = "flake.nix";
         programs.nixpkgs-fmt.enable = true;
         programs.prettier.enable = true;
@@ -40,6 +41,7 @@
 
       checks.x86_64-linux = packages;
       formatter.x86_64-linux = formatter;
+      devShells.x86_64-linux = devShells;
 
       lib.safeMergeAttrs = builtins.foldl'
         (a: b:
