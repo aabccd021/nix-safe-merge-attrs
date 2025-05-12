@@ -1,8 +1,7 @@
 {
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-  };
+  nixConfig.allow-import-from-derivation = false;
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
 
   outputs = { nixpkgs, treefmt-nix, self }:
     let
