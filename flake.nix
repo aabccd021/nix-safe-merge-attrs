@@ -19,15 +19,15 @@
 
       formatter = treefmtEval.config.build.wrapper;
 
-      packages = devShells // {
-        formatting = treefmtEval.config.build.check self;
-        formatter = formatter;
-      };
-
       devShells.default = pkgs.mkShellNoCC {
         buildInputs = [
           pkgs.nixd
         ];
+      };
+
+      packages = devShells // {
+        formatting = treefmtEval.config.build.check self;
+        formatter = formatter;
       };
 
     in
