@@ -8,14 +8,6 @@
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
 
-      packages = {
-        formatting = treefmtEval.config.build.check self;
-      };
-
-      gcroot = packages // {
-        gcroot = pkgs.linkFarm "gcroot" packages;
-      };
-
       treefmtEval = treefmt-nix.lib.evalModule pkgs {
         projectRootFile = "flake.nix";
         programs.nixpkgs-fmt.enable = true;
@@ -26,17 +18,31 @@
         settings.global.excludes = [ "LICENSE" ];
       };
 
+      formatter = treefmtEval.config.build.wrapper;
+
+      packages = devShells // {
+        formatting = treefmtEval.config.build.check self;
+        formatter = formatter;
+      };
+
+      devShells.default = pkgs.mkShellNoCC {
+        buildInputs = [
+          pkgs.nixd
+        ];
+      };
+
     in
 
     {
 
-      packages.x86_64-linux = gcroot;
+      packages.x86_64-linux = packages // {
+        gcroot = pkgs.linkFarm "gcroot" packages;
+      };
 
-      checks.x86_64-linux = gcroot;
+      checks.x86_64-linux = packages;
+      formatter.x86_64-linux = formatter;
 
-      formatter.x86_64-linux = treefmtEval.config.build.wrapper;
-
-      lib. safeMergeAttrs = builtins.foldl'
+      lib.safeMergeAttrs = builtins.foldl'
         (a: b:
           let
             intersections = builtins.concatStringsSep " " (builtins.attrNames (builtins.intersectAttrs a b));
@@ -47,8 +53,6 @@
             a // b
         )
         { };
-
-
 
     };
 }
