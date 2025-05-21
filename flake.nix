@@ -4,17 +4,21 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
 
-  outputs = { self, ... }@inputs:
+  outputs =
+    { self, ... }@inputs:
     let
       pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
 
       treefmtEval = inputs.treefmt-nix.lib.evalModule pkgs {
         projectRootFile = "flake.nix";
-        programs.nixpkgs-fmt.enable = true;
+        programs.nixfmt.enable = true;
         programs.prettier.enable = true;
         programs.shfmt.enable = true;
         programs.shellcheck.enable = true;
-        settings.formatter.shellcheck.options = [ "-s" "sh" ];
+        settings.formatter.shellcheck.options = [
+          "-s"
+          "sh"
+        ];
         settings.global.excludes = [ "LICENSE" ];
       };
 
@@ -43,17 +47,13 @@
       formatter.x86_64-linux = formatter;
       devShells.x86_64-linux = devShells;
 
-      lib.safeMergeAttrs = builtins.foldl'
-        (a: b:
-          let
-            intersections = builtins.concatStringsSep " " (builtins.attrNames (builtins.intersectAttrs a b));
-          in
-          if intersections != "" then
-            builtins.abort "Duplicate keys detected: ${intersections}"
-          else
-            a // b
-        )
-        { };
+      lib.safeMergeAttrs = builtins.foldl' (
+        a: b:
+        let
+          intersections = builtins.concatStringsSep " " (builtins.attrNames (builtins.intersectAttrs a b));
+        in
+        if intersections != "" then builtins.abort "Duplicate keys detected: ${intersections}" else a // b
+      ) { };
 
     };
 }
